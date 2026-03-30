@@ -165,10 +165,10 @@
 
 <script>
   // ─────────────────────────────────────────────────
-  //  Reemplazá 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 con tu key de Anthropic
+  //  Reemplazá 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 con tu key de Anthropic
   //  antes de subir este archivo a GitHub
   // ─────────────────────────────────────────────────
-  const ANTHROPIC_KEY = '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';
+  const ANTHROPIC_KEY = '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';
   // ─────────────────────────────────────────────────
 
   const CONDITIONS = {
@@ -242,11 +242,13 @@
     hideError();
     setLoading(true);
 
-    const prompt = `Sos un experto en SEO de MercadoLibre Argentina y copywriting de ventas. Analizá el producto y generá una respuesta JSON.
-
+    function buildPrompt(product, cond, condCtx, fixes) {
+      const fixNote = fixes ? `\n⚠️ CORRECCIÓN REQUERIDA: ${fixes}` : '';
+      return `Sos un experto en SEO de MercadoLibre Argentina y copywriting de ventas. Analizá el producto y generá una respuesta JSON.
+${fixNote}
 PRODUCTO: "${product}"
-CONDICIÓN: ${selectedCond}
-CONTEXTO CONDICIÓN: ${condContexts[selectedCond]}
+CONDICIÓN: ${cond}
+CONTEXTO CONDICIÓN: ${condCtx}
 
 ═══ REGLAS PARA TÍTULOS SEO ═══
 Los títulos son EXCLUSIVAMENTE para posicionamiento en el buscador de MercadoLibre.
@@ -262,26 +264,37 @@ OBLIGATORIO en los títulos:
 - Marca del producto (si aplica o es inferible)
 - Modelo exacto o número de modelo (si aplica)
 - Especificaciones técnicas reales: capacidad (GB/TB/mAh/W/Hz/etc.), versión, generación, color, tamaño, conectividad, protocolo, resolución, velocidad, compatibilidad, materiales, etc.
-- Usar SOLO datos técnicos verificables y relevantes para la búsqueda
-- Completar los caracteres restantes con atributos técnicos adicionales o términos de búsqueda relacionados
+- Completar los caracteres restantes con sinónimos de búsqueda, variantes del nombre del producto, o atributos técnicos adicionales
 
-FORMATO:
-- Título tradicional: EXACTAMENTE entre 55 y 60 caracteres. Nunca menos de 55, nunca más de 60.
-- Título catálogo: EXACTAMENTE entre 185 y 200 caracteres. Nunca menos de 185, nunca más de 200.
+⚠️ REGLA CRÍTICA DE CARACTERES — SE VERIFICA AUTOMÁTICAMENTE:
+- Título tradicional: MÍNIMO 56 caracteres, MÁXIMO 60. Contá los caracteres uno por uno antes de responder. Si te quedan caracteres libres, agregá más atributos técnicos o sinónimos hasta llegar al mínimo. NO está permitido entregar un título con menos de 56 caracteres.
+- Título catálogo: MÍNIMO 196 caracteres, MÁXIMO 200. Contá los caracteres uno por uno antes de responder. Si te quedan caracteres libres, expandí las especificaciones o agregá más atributos hasta llegar al mínimo. NO está permitido entregar un título con menos de 196 caracteres.
+- Antes de escribir el JSON, escribí mentalmente el título y contá: T-I-T-U-L-O → N caracteres. Si N < mínimo, extendelo.
 - Separar atributos con espacios. Se puede usar guión medio para rangos o modelos.
 
 ═══ REGLAS PARA EL TEXTO COMERCIAL ═══
-- Tono vos a vos, cercano, honesto. Para descripción de ML o redes.
-- 2 a 4 oraciones. Entre 150 y 250 caracteres en total.
-- Mencionar la condición según contexto indicado arriba.
-- Frases como "Te ofrecemos", "Lo que recibís", "Funciona perfecto", "Sin vueltas".
-- Máximo 1 signo de exclamación.
+El texto comercial es la DESCRIPCIÓN COMPLETA de la publicación de MercadoLibre. Debe ser larga, detallada, persuasiva y útil para el comprador.
+
+ESTRUCTURA OBLIGATORIA (en este orden, separado por párrafos con \\n\\n):
+1. PÁRRAFO DE APERTURA: Presentación del producto con tono cercano (vos a vos). Mencioná el nombre completo, la condición según el contexto indicado, y una frase que enganche al comprador. 2-3 oraciones.
+2. PÁRRAFO DE CARACTERÍSTICAS TÉCNICAS: Listá todas las especificaciones técnicas relevantes del producto. Incluí modelo, dimensiones, potencia, capacidad, conectividad, resolución, materiales, colores disponibles, versión, compatibilidad, protocolos, sensores, y cualquier dato técnico relevante. Sé exhaustivo.
+3. PÁRRAFO DE BENEFICIOS Y USO: Explicá para qué sirve, quién lo puede usar, en qué situaciones es útil, qué problemas resuelve. Tono conversacional y directo.
+4. PÁRRAFO DE CONTENIDO DE LA CAJA: Describí qué incluye el packaging (accesorios, cables, manuales, adaptadores, etc.). Si no sabés exactamente, mencioná los ítems típicos para ese tipo de producto.
+5. PÁRRAFO DE CIERRE SEGÚN CONDICIÓN: Cerrá mencionando la condición del producto con honestidad y transparencia según el contexto indicado. Para REF explicá qué significa y por qué es buena opción. Para REF ABOLLADO mencioná las abolladuras y el funcionamiento perfecto. Para OPEN BOX aclará que es nuevo con caja abierta. Para USADO BUENO mencioná el estado y funcionamiento. Para NUEVO resaltá que es nuevo sin uso.
+
+REGLAS DE TONO Y ESTILO:
+- Tono vos a vos, cercano, honesto, sin exagerar
+- Frases como "Te ofrecemos", "Lo que recibís", "Funciona perfecto", "Sin vueltas", "Ideal para"
+- Máximo 2 signos de exclamación en todo el texto
+- NO usar palabras prohibidas: "envío gratis", "original", "oficial", "garantía", "premium", "oferta", "económico"
+- Longitud total: entre 800 y 1200 caracteres
+- Usar \\n\\n para separar párrafos
 
 Respondé SOLO con este JSON (sin backticks, sin texto extra):
 {
-  "titulo_tradicional": "55-60 chars exactos, solo datos técnicos",
-  "titulo_catalogo": "185-200 chars exactos, solo datos técnicos",
-  "titulo_comercial": "texto vos a vos 150-250 chars",
+  "titulo_tradicional": "MÍNIMO 56, MÁXIMO 60 chars — solo datos técnicos",
+  "titulo_catalogo": "MÍNIMO 196, MÁXIMO 200 chars — solo datos técnicos",
+  "titulo_comercial": "descripción completa con párrafos separados por \\n\\n, 800-1200 chars",
   "palabras_clave": [
     {"kw": "keyword técnico", "nivel": "alto"},
     {"kw": "keyword técnico", "nivel": "alto"},
@@ -294,8 +307,8 @@ Respondé SOLO con este JSON (sin backticks, sin texto extra):
   "potencial": "Alto/Medio/Bajo",
   "competencia": "Alta/Media/Baja",
   "alternativas_tradicional": [
-    {"titulo": "variante 55-60 chars"},
-    {"titulo": "variante 55-60 chars"}
+    {"titulo": "MÍNIMO 56, MÁXIMO 60 chars"},
+    {"titulo": "MÍNIMO 56, MÁXIMO 60 chars"}
   ],
   "insights": [
     {"tipo": "blue", "texto": "insight posicionamiento técnico"},
@@ -303,8 +316,9 @@ Respondé SOLO con este JSON (sin backticks, sin texto extra):
     {"tipo": "amber", "texto": "insight táctica o advertencia"}
   ]
 }`;
+    }
 
-    try {
+    async function callAPI(prompt) {
       const res = await fetch('https://api.anthropic.com/v1/messages', {
         method: 'POST',
         headers: {
@@ -315,17 +329,43 @@ Respondé SOLO con este JSON (sin backticks, sin texto extra):
         },
         body: JSON.stringify({
           model: 'claude-sonnet-4-20250514',
-          max_tokens: 1200,
+          max_tokens: 2500,
           messages: [{ role: 'user', content: prompt }]
         })
       });
       const data = await res.json();
       const raw = data.content.map(b => b.text || '').join('');
-      const parsed = JSON.parse(raw.replace(/```json|```/g, '').trim());
+      return JSON.parse(raw.replace(/```json|```/g, '').trim());
+    }
+
+    try {
+      // Primer intento
+      document.getElementById('loadingText').textContent = 'Generando títulos SEO...';
+      let parsed = await callAPI(buildPrompt(product, selectedCond, condContexts[selectedCond], null));
+
+      // Validar y reintentar si algún título está corto
+      const tradLen = (parsed.titulo_tradicional || '').length;
+      const catLen  = (parsed.titulo_catalogo || '').length;
+      const fixes = [];
+      if (tradLen < 56) fixes.push(`titulo_tradicional tiene ${tradLen} chars, necesita mínimo 56. Actual: "${parsed.titulo_tradicional}". Extendelo agregando más atributos técnicos.`);
+      if (catLen  < 196) fixes.push(`titulo_catalogo tiene ${catLen} chars, necesita mínimo 196. Actual: "${parsed.titulo_catalogo}". Extendelo agregando más especificaciones.`);
+
+      if (fixes.length > 0) {
+        document.getElementById('loadingText').textContent = 'Ajustando longitud de títulos...';
+        parsed = await callAPI(buildPrompt(product, selectedCond, condContexts[selectedCond], fixes.join(' | ')));
+      }
 
       document.getElementById('tradTitle').textContent = parsed.titulo_tradicional || '';
       document.getElementById('catTitle').textContent  = parsed.titulo_catalogo    || '';
-      document.getElementById('commTitle').textContent = parsed.titulo_comercial   || '';
+      const commEl = document.getElementById('commTitle');
+      commEl.innerHTML = '';
+      (parsed.titulo_comercial || '').split('\n\n').forEach(p => {
+        if (!p.trim()) return;
+        const el = document.createElement('p');
+        el.textContent = p.trim();
+        el.style.marginBottom = '0.75rem';
+        commEl.appendChild(el);
+      });
       updateBar('tradBar', 'tradBadge', (parsed.titulo_tradicional || '').length, 60);
       updateBar('catBar',  'catBadge',  (parsed.titulo_catalogo    || '').length, 200);
 
