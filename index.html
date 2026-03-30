@@ -164,12 +164,7 @@
 </div>
 
 <script>
-  // ─────────────────────────────────────────────────
-  //  Reemplazá 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 con tu key de Anthropic
-  //  antes de subir este archivo a GitHub
-  // ─────────────────────────────────────────────────
-  const ANTHROPIC_KEY = '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';
-  // ─────────────────────────────────────────────────
+  const BACKEND_URL = 'https://powercase-seo.vercel.app/api/analyze';
 
   const CONDITIONS = {
     "NUEVO":        { info: null },
@@ -319,19 +314,10 @@ Respondé SOLO con este JSON (sin backticks, sin texto extra):
     }
 
     async function callAPI(prompt) {
-      const res = await fetch('https://api.anthropic.com/v1/messages', {
+      const res = await fetch(BACKEND_URL, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'x-api-key': ANTHROPIC_KEY,
-          'anthropic-version': '2023-06-01',
-          'anthropic-dangerous-direct-browser-access': 'true'
-        },
-        body: JSON.stringify({
-          model: 'claude-sonnet-4-20250514',
-          max_tokens: 2500,
-          messages: [{ role: 'user', content: prompt }]
-        })
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ prompt })
       });
       const data = await res.json();
       const raw = data.content.map(b => b.text || '').join('');
