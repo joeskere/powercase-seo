@@ -1,0 +1,373 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Powercase · SEO Optimizer</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --bg: #f5f5f3; --surface: #ffffff; --surface2: #f0efed;
+      --border: rgba(0,0,0,0.1); --border-strong: rgba(0,0,0,0.18);
+      --text: #1a1a18; --text2: #6b6b67; --text3: #9a9a96;
+      --blue: #3483FA; --blue-bg: #e6f1fb; --blue-text: #185fa5;
+      --green-bg: #eaf3de; --green-text: #27500a;
+      --amber: #BA7517; --amber-bg: #faeeda; --amber-text: #633806;
+      --red-bg: #fcebeb; --red-text: #791f1f;
+      --radius: 8px; --radius-lg: 12px;
+    }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; padding: 2rem 1rem 4rem; }
+    .container { max-width: 720px; margin: 0 auto; }
+    .header { margin-bottom: 2rem; }
+    .ml-badge { display: inline-flex; align-items: center; gap: 6px; background: #FFE600; color: #222; font-size: 12px; font-weight: 600; padding: 3px 10px; border-radius: 20px; margin-bottom: 12px; }
+    .ml-badge-dot { width: 8px; height: 8px; background: #3483FA; border-radius: 50%; }
+    .header h1 { font-size: 24px; font-weight: 600; margin-bottom: 4px; }
+    .header p { font-size: 14px; color: var(--text2); }
+    .card { background: var(--surface); border: 0.5px solid var(--border); border-radius: var(--radius-lg); padding: 1.25rem; margin-bottom: 1rem; }
+    .input-row { display: flex; gap: 10px; margin-bottom: 12px; }
+    .input-row input { flex: 1; font-size: 15px; padding: 10px 14px; border: 0.5px solid var(--border-strong); border-radius: var(--radius); background: var(--surface); color: var(--text); outline: none; font-family: inherit; }
+    .input-row input:focus { border-color: var(--blue); box-shadow: 0 0 0 3px rgba(52,131,250,0.12); }
+    .input-row input::placeholder { color: var(--text3); }
+    .btn { padding: 10px 22px; background: var(--blue); color: #fff; border: none; border-radius: var(--radius); font-size: 14px; font-weight: 600; cursor: pointer; font-family: inherit; white-space: nowrap; }
+    .btn:hover { background: #2968c8; }
+    .btn:disabled { opacity: 0.45; cursor: not-allowed; }
+    .section-label { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.07em; color: var(--text3); margin-bottom: 10px; }
+    .cond-buttons { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 1.5rem; }
+    .cond-btn { font-size: 12px; padding: 5px 13px; border: 0.5px solid var(--border-strong); border-radius: 20px; background: var(--surface); color: var(--text2); cursor: pointer; font-family: inherit; transition: all 0.15s; }
+    .cond-btn:hover { color: var(--text); border-color: #888; }
+    .cond-btn.active { color: #fff; font-weight: 600; border-color: transparent; }
+    .cond-btn.active[data-cond="NUEVO"]        { background: var(--blue); }
+    .cond-btn.active[data-cond="OPEN BOX"]     { background: #BA7517; }
+    .cond-btn.active[data-cond="USADO BUENO"]  { background: #5F5E5A; }
+    .cond-btn.active[data-cond="REF"]          { background: #185FA5; }
+    .cond-btn.active[data-cond="REF ABOLLADO"] { background: #993C1D; }
+    .cond-info { display: none; font-size: 12px; color: var(--text2); background: var(--surface2); border-radius: var(--radius); padding: 8px 12px; margin-bottom: 1.25rem; border-left: 3px solid var(--blue); line-height: 1.55; }
+    .cond-info.visible { display: block; }
+    .title-card { background: var(--surface); border: 0.5px solid var(--border); border-radius: var(--radius-lg); padding: 1rem 1.25rem; margin-bottom: 1rem; }
+    .title-card.commercial { border-color: #b5d4f4; }
+    .title-type-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; }
+    .title-type { font-size: 13px; font-weight: 500; color: var(--text2); }
+    .commercial-tag { font-size: 11px; background: var(--blue-bg); color: var(--blue-text); padding: 2px 8px; border-radius: 20px; font-weight: 600; margin-left: 8px; }
+    .char-badge { font-size: 12px; padding: 3px 10px; border-radius: 20px; font-weight: 600; }
+    .char-ok   { background: var(--green-bg); color: var(--green-text); }
+    .char-warn { background: var(--amber-bg); color: var(--amber-text); }
+    .title-text { font-size: 15px; color: var(--text); line-height: 1.5; margin-bottom: 10px; font-weight: 500; }
+    .comm-text  { font-size: 14px; color: var(--text2); line-height: 1.6; margin-bottom: 10px; font-weight: 400; }
+    .bar-bg { height: 4px; background: var(--surface2); border-radius: 4px; overflow: hidden; }
+    .bar-fill { height: 4px; border-radius: 4px; transition: width 0.6s ease; }
+    .bar-green { background: #639922; }
+    .bar-amber { background: var(--amber); }
+    .copy-btn { margin-top: 10px; font-size: 12px; padding: 5px 12px; border: 0.5px solid var(--border-strong); background: var(--surface2); color: var(--text2); border-radius: var(--radius); cursor: pointer; font-family: inherit; }
+    .copy-btn:hover { color: var(--text); border-color: #888; }
+    .metrics-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; margin-bottom: 1.5rem; }
+    .metric { background: var(--surface2); border-radius: var(--radius); padding: 12px; }
+    .metric-label { font-size: 12px; color: var(--text2); margin-bottom: 4px; }
+    .metric-value { font-size: 20px; font-weight: 600; color: var(--text); }
+    .metric-sub { font-size: 11px; color: var(--text3); margin-top: 2px; }
+    .kw-list { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 1.5rem; }
+    .kw-pill { font-size: 12px; padding: 4px 10px; border-radius: 20px; border: 0.5px solid var(--border); color: var(--text2); background: var(--surface); }
+    .kw-pill.high { background: var(--blue-bg); color: var(--blue-text); border-color: #b5d4f4; }
+    .kw-pill.med  { background: var(--green-bg); color: var(--green-text); border-color: #c0dd97; }
+    .alt-item { padding: 8px 12px; border: 0.5px solid var(--border); border-radius: var(--radius); margin-bottom: 6px; font-size: 13px; color: var(--text2); display: flex; justify-content: space-between; align-items: center; gap: 8px; cursor: pointer; background: var(--surface); }
+    .alt-item:hover { background: var(--surface2); color: var(--text); }
+    .alt-chars { font-size: 11px; color: var(--text3); flex-shrink: 0; }
+    .insight-item { display: flex; gap: 10px; align-items: flex-start; padding: 10px 0; border-bottom: 0.5px solid var(--border); font-size: 13px; color: var(--text2); line-height: 1.55; }
+    .insight-item:last-child { border-bottom: none; }
+    .insight-dot { width: 6px; height: 6px; border-radius: 50%; margin-top: 5px; flex-shrink: 0; }
+    .dot-blue { background: #378ADD; } .dot-green { background: #639922; } .dot-amber { background: var(--amber); }
+    .loading { display: none; text-align: center; padding: 3rem 0; }
+    .loading.visible { display: block; }
+    .spinner { width: 28px; height: 28px; border: 2px solid var(--border); border-top-color: var(--blue); border-radius: 50%; animation: spin 0.7s linear infinite; margin: 0 auto 12px; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .loading p { font-size: 14px; color: var(--text2); }
+    .error-box { display: none; background: var(--red-bg); border: 0.5px solid #f7c1c1; border-radius: var(--radius); padding: 12px 16px; font-size: 13px; color: var(--red-text); margin-bottom: 1rem; }
+    .error-box.visible { display: block; }
+    .results { display: none; }
+    .results.visible { display: block; }
+  </style>
+</head>
+<body>
+<div class="container">
+  <div class="header">
+    <div class="ml-badge"><div class="ml-badge-dot"></div> MercadoLibre SEO Optimizer</div>
+    <h1>Optimizador de títulos</h1>
+    <p>Ingresá el producto, elegí la condición y generamos todos los títulos optimizados.</p>
+  </div>
+
+  <div class="card">
+    <div class="input-row">
+      <input type="text" id="productInput" placeholder="Ej: auriculares bluetooth inalámbricos" />
+      <button class="btn" id="analyzeBtn" onclick="analyze()">Analizar</button>
+    </div>
+    <div class="section-label">Condición del producto</div>
+    <div class="cond-buttons">
+      <button class="cond-btn active" data-cond="NUEVO"        onclick="setCond(this)">Nuevo</button>
+      <button class="cond-btn"        data-cond="OPEN BOX"     onclick="setCond(this)">Open Box</button>
+      <button class="cond-btn"        data-cond="USADO BUENO"  onclick="setCond(this)">Usado bueno</button>
+      <button class="cond-btn"        data-cond="REF"          onclick="setCond(this)">REF</button>
+      <button class="cond-btn"        data-cond="REF ABOLLADO" onclick="setCond(this)">REF abollado</button>
+    </div>
+    <div class="cond-info" id="condInfo"></div>
+    <div class="error-box" id="errorBox"></div>
+  </div>
+
+  <div class="loading" id="loading">
+    <div class="spinner"></div>
+    <p id="loadingText">Analizando el mercado...</p>
+  </div>
+
+  <div class="results" id="results">
+    <div class="section-label">Texto comercial <span class="commercial-tag">vos a vos · genera confianza</span></div>
+    <div class="title-card commercial">
+      <div class="title-type-row"><span class="title-type">Para descripción / redes / anuncios</span></div>
+      <div class="comm-text" id="commTitle">—</div>
+      <button class="copy-btn" onclick="copyEl('commTitle', this)">Copiar texto comercial</button>
+    </div>
+
+    <div class="section-label">Título publicación tradicional (máx. 60 caracteres)</div>
+    <div class="title-card">
+      <div class="title-type-row">
+        <span class="title-type">Publicación tradicional</span>
+        <span class="char-badge char-ok" id="tradBadge">0/60</span>
+      </div>
+      <div class="title-text" id="tradTitle">—</div>
+      <div class="bar-bg"><div class="bar-fill" id="tradBar" style="width:0%"></div></div>
+      <button class="copy-btn" onclick="copyEl('tradTitle', this)">Copiar título</button>
+    </div>
+
+    <div class="section-label">Título catálogo (máx. 200 caracteres)</div>
+    <div class="title-card">
+      <div class="title-type-row">
+        <span class="title-type">Publicación de catálogo</span>
+        <span class="char-badge char-ok" id="catBadge">0/200</span>
+      </div>
+      <div class="title-text" id="catTitle">—</div>
+      <div class="bar-bg"><div class="bar-fill" id="catBar" style="width:0%"></div></div>
+      <button class="copy-btn" onclick="copyEl('catTitle', this)">Copiar título</button>
+    </div>
+
+    <div class="section-label" style="margin-top:1.5rem;">Palabras clave detectadas</div>
+    <div class="kw-list" id="kwList"></div>
+
+    <div class="metrics-grid">
+      <div class="metric"><div class="metric-label">Densidad SEO</div><div class="metric-value" id="seoDensity">—</div><div class="metric-sub">sobre 10</div></div>
+      <div class="metric"><div class="metric-label">Potencial</div><div class="metric-value" id="seoPotential">—</div><div class="metric-sub">de visibilidad</div></div>
+      <div class="metric"><div class="metric-label">Competencia</div><div class="metric-value" id="seoCompetition">—</div><div class="metric-sub">estimada</div></div>
+    </div>
+
+    <div class="section-label">Variantes alternativas (clic para copiar)</div>
+    <div id="altList" style="margin-bottom:1.5rem;"></div>
+
+    <div class="section-label">Insights de posicionamiento</div>
+    <div class="card" id="insightsList"></div>
+  </div>
+</div>
+
+<script>
+  // ─────────────────────────────────────────────────
+  //  Reemplazá TU_API_KEY_ACÁ con tu key de Anthropic
+  //  antes de subir este archivo a GitHub
+  // ─────────────────────────────────────────────────
+  const ANTHROPIC_KEY = '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';
+  // ─────────────────────────────────────────────────
+
+  const CONDITIONS = {
+    "NUEVO":        { info: null },
+    "OPEN BOX":     { info: "Open Box: el producto es nuevo pero viene con la caja abierta (sin sellar). No fue usado.", color: "#BA7517" },
+    "USADO BUENO":  { info: "Usado bueno: el producto es usado y puede presentar marcas de uso normales. Funciona perfectamente.", color: "#5F5E5A" },
+    "REF":          { info: "REF (Refabricado): ensamblado con partes de distintos equipos. Funciona igual que uno nuevo a menor precio.", color: "#185FA5" },
+    "REF ABOLLADO": { info: "REF Abollado: refabricado con abolladuras visibles. Funciona perfectamente. Las marcas estéticas justifican el precio.", color: "#993C1D" }
+  };
+
+  const condContexts = {
+    "NUEVO":        "El producto es nuevo, en perfectas condiciones.",
+    "OPEN BOX":     "El producto es nuevo con caja abierta. MercadoLibre ya categoriza la condición. El texto comercial sí debe aclararlo con honestidad.",
+    "USADO BUENO":  "El producto es usado. MercadoLibre ya categoriza la condición. El texto comercial sí debe mencionar el uso y el buen funcionamiento.",
+    "REF":          "El producto es refabricado (REF). MercadoLibre ya categoriza la condición. El texto comercial sí debe explicar qué es REF y por qué es buena opción.",
+    "REF ABOLLADO": "El producto es refabricado con abolladuras visibles, funciona perfectamente. MercadoLibre ya categoriza la condición. El texto comercial sí debe mencionar las abolladuras y el funcionamiento perfecto."
+  };
+
+  const loadingPhrases = ["Analizando palabras clave...", "Evaluando competencia en MercadoLibre...", "Construyendo título SEO...", "Generando texto comercial...", "Aplicando estrategia de posicionamiento..."];
+  let selectedCond = "NUEVO";
+
+  function setCond(btn) {
+    document.querySelectorAll('.cond-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    selectedCond = btn.dataset.cond;
+    const def = CONDITIONS[selectedCond];
+    const info = document.getElementById('condInfo');
+    if (def && def.info) { info.textContent = def.info; info.style.borderLeftColor = def.color; info.classList.add('visible'); }
+    else { info.classList.remove('visible'); }
+  }
+
+  function setLoading(on) {
+    document.getElementById('loading').classList.toggle('visible', on);
+    document.getElementById('analyzeBtn').disabled = on;
+    if (on) {
+      document.getElementById('results').classList.remove('visible');
+      let i = 0;
+      const iv = setInterval(() => {
+        if (!document.getElementById('loading').classList.contains('visible')) { clearInterval(iv); return; }
+        document.getElementById('loadingText').textContent = loadingPhrases[i++ % loadingPhrases.length];
+      }, 1800);
+    }
+  }
+
+  function showError(msg) { const e = document.getElementById('errorBox'); e.textContent = msg; e.classList.add('visible'); }
+  function hideError() { document.getElementById('errorBox').classList.remove('visible'); }
+
+  function updateBar(barId, badgeId, len, max) {
+    const pct = Math.round((len / max) * 100);
+    const bar = document.getElementById(barId);
+    const badge = document.getElementById(badgeId);
+    bar.style.width = pct + '%';
+    bar.className = 'bar-fill ' + (pct >= 85 ? 'bar-green' : 'bar-amber');
+    badge.textContent = len + '/' + max;
+    badge.className = 'char-badge ' + (pct >= 80 ? 'char-ok' : 'char-warn');
+  }
+
+  function copyEl(id, btn) {
+    navigator.clipboard.writeText(document.getElementById(id).textContent).then(() => {
+      const orig = btn.textContent;
+      btn.textContent = '✓ Copiado';
+      setTimeout(() => { btn.textContent = orig; }, 2000);
+    });
+  }
+
+  document.getElementById('productInput').addEventListener('keydown', e => { if (e.key === 'Enter') analyze(); });
+
+  async function analyze() {
+    const product = document.getElementById('productInput').value.trim();
+    if (!product) return;
+    hideError();
+    setLoading(true);
+
+    const prompt = `Sos un experto en SEO de MercadoLibre Argentina y copywriting de ventas. Analizá el producto y generá una respuesta JSON.
+
+PRODUCTO: "${product}"
+CONDICIÓN: ${selectedCond}
+CONTEXTO CONDICIÓN: ${condContexts[selectedCond]}
+
+═══ REGLAS PARA TÍTULOS SEO ═══
+Los títulos son EXCLUSIVAMENTE para posicionamiento en el buscador de MercadoLibre.
+
+PROHIBIDO incluir en los títulos:
+- Palabras de logística o comerciales: "envío gratis", "envio", "entrega", "despacho"
+- Palabras de confianza o marketing: "original", "oficial", "genuino", "garantía", "calidad", "premium", "top", "mejor"
+- Condición del producto: MercadoLibre ya la categoriza por separado
+- Palabras vacías: "excelente", "increíble", "ideal", "perfecto", "económico", "barato", "oferta", "promoción"
+- Artículos al inicio: "el", "la", "los", "las", "un", "una"
+
+OBLIGATORIO en los títulos:
+- Marca del producto (si aplica o es inferible)
+- Modelo exacto o número de modelo (si aplica)
+- Especificaciones técnicas reales: capacidad (GB/TB/mAh/W/Hz/etc.), versión, generación, color, tamaño, conectividad, protocolo, resolución, velocidad, compatibilidad, materiales, etc.
+- Usar SOLO datos técnicos verificables y relevantes para la búsqueda
+- Completar los caracteres restantes con atributos técnicos adicionales o términos de búsqueda relacionados
+
+FORMATO:
+- Título tradicional: EXACTAMENTE entre 55 y 60 caracteres. Nunca menos de 55, nunca más de 60.
+- Título catálogo: EXACTAMENTE entre 185 y 200 caracteres. Nunca menos de 185, nunca más de 200.
+- Separar atributos con espacios. Se puede usar guión medio para rangos o modelos.
+
+═══ REGLAS PARA EL TEXTO COMERCIAL ═══
+- Tono vos a vos, cercano, honesto. Para descripción de ML o redes.
+- 2 a 4 oraciones. Entre 150 y 250 caracteres en total.
+- Mencionar la condición según contexto indicado arriba.
+- Frases como "Te ofrecemos", "Lo que recibís", "Funciona perfecto", "Sin vueltas".
+- Máximo 1 signo de exclamación.
+
+Respondé SOLO con este JSON (sin backticks, sin texto extra):
+{
+  "titulo_tradicional": "55-60 chars exactos, solo datos técnicos",
+  "titulo_catalogo": "185-200 chars exactos, solo datos técnicos",
+  "titulo_comercial": "texto vos a vos 150-250 chars",
+  "palabras_clave": [
+    {"kw": "keyword técnico", "nivel": "alto"},
+    {"kw": "keyword técnico", "nivel": "alto"},
+    {"kw": "keyword técnico", "nivel": "medio"},
+    {"kw": "keyword técnico", "nivel": "medio"},
+    {"kw": "keyword técnico", "nivel": "bajo"},
+    {"kw": "keyword técnico", "nivel": "bajo"}
+  ],
+  "densidad_seo": "1-10",
+  "potencial": "Alto/Medio/Bajo",
+  "competencia": "Alta/Media/Baja",
+  "alternativas_tradicional": [
+    {"titulo": "variante 55-60 chars"},
+    {"titulo": "variante 55-60 chars"}
+  ],
+  "insights": [
+    {"tipo": "blue", "texto": "insight posicionamiento técnico"},
+    {"tipo": "green", "texto": "insight oportunidad de mercado"},
+    {"tipo": "amber", "texto": "insight táctica o advertencia"}
+  ]
+}`;
+
+    try {
+      const res = await fetch('https://api.anthropic.com/v1/messages', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-api-key': ANTHROPIC_KEY,
+          'anthropic-version': '2023-06-01',
+          'anthropic-dangerous-direct-browser-access': 'true'
+        },
+        body: JSON.stringify({
+          model: 'claude-sonnet-4-20250514',
+          max_tokens: 1200,
+          messages: [{ role: 'user', content: prompt }]
+        })
+      });
+      const data = await res.json();
+      const raw = data.content.map(b => b.text || '').join('');
+      const parsed = JSON.parse(raw.replace(/```json|```/g, '').trim());
+
+      document.getElementById('tradTitle').textContent = parsed.titulo_tradicional || '';
+      document.getElementById('catTitle').textContent  = parsed.titulo_catalogo    || '';
+      document.getElementById('commTitle').textContent = parsed.titulo_comercial   || '';
+      updateBar('tradBar', 'tradBadge', (parsed.titulo_tradicional || '').length, 60);
+      updateBar('catBar',  'catBadge',  (parsed.titulo_catalogo    || '').length, 200);
+
+      const kwList = document.getElementById('kwList');
+      kwList.innerHTML = '';
+      (parsed.palabras_clave || []).forEach(k => {
+        const p = document.createElement('div');
+        p.className = 'kw-pill ' + (k.nivel === 'alto' ? 'high' : k.nivel === 'medio' ? 'med' : '');
+        p.textContent = k.kw;
+        kwList.appendChild(p);
+      });
+
+      document.getElementById('seoDensity').textContent    = (parsed.densidad_seo || '—') + '/10';
+      document.getElementById('seoPotential').textContent  = parsed.potencial     || '—';
+      document.getElementById('seoCompetition').textContent = parsed.competencia  || '—';
+
+      const altList = document.getElementById('altList');
+      altList.innerHTML = '';
+      (parsed.alternativas_tradicional || []).forEach(alt => {
+        const d = document.createElement('div');
+        d.className = 'alt-item';
+        d.innerHTML = `<span>${alt.titulo}</span><span class="alt-chars">${alt.titulo.length}/60</span>`;
+        d.onclick = () => { navigator.clipboard.writeText(alt.titulo); d.style.background = '#e6f1fb'; setTimeout(() => { d.style.background = ''; }, 800); };
+        altList.appendChild(d);
+      });
+
+      const ins = document.getElementById('insightsList');
+      ins.innerHTML = '';
+      (parsed.insights || []).forEach(i => {
+        const d = document.createElement('div');
+        d.className = 'insight-item';
+        d.innerHTML = `<div class="insight-dot dot-${i.tipo}"></div><span>${i.texto}</span>`;
+        ins.appendChild(d);
+      });
+
+      setLoading(false);
+      document.getElementById('results').classList.add('visible');
+    } catch(err) {
+      setLoading(false);
+      showError('Ocurrió un error al generar el análisis. Verificá la conexión e intentá de nuevo.');
+    }
+  }
+</script>
+</body>
+</html>
